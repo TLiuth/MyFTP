@@ -63,3 +63,39 @@ class Client:
     def greet(self):
         """Mensagem de saudação."""
         print("Conectado ao servidor")
+
+    def send_file(self, file_name, target_socket):
+        """ Function to send a file back """
+        try:
+            with open(file_name, "rb") as file:
+                print(f">> Enviando arquivo: {file_name}")
+                while True:
+                    data = file.read(1024) # lê 1024 bytes do arquivo
+                    if not data:
+                        break
+                    target_socket.sendall(data)
+                print(f"Arquivo '{file_name}' enviado com sucesso")
+                return ">> Arquivo buscado com sucesso"
+        except FileNotFoundError:
+            return f"Erro: Arquivo '{file_name}' não encontrado"
+        except Exception as e:
+            return f"Erro ao executar 'get': {e}"
+
+    def receive_file(self, file_name, origin_socket):
+        """Função para receber um arquivo."""
+        try:
+            with open(file_name, "wb") as file:
+                print(f"Recebendo arquivo: {file_name}")
+
+                while True:
+                    data = origin_socket.recv(1024)
+                    if not data:
+                        break
+                    file.write(data)
+
+                print(f"Arquivo '{file_name}' recebido com sucesso.")
+                return ">> Arquivo enviado com sucesso."
+        except FileNotFoundError:
+            return f"Erro: Não foi possível criar o arquivo '{file_name}'"
+        except Exception as e:
+            return f"Erro ao receber arquivo: {e}"

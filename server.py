@@ -8,6 +8,7 @@ import subprocess
 
 from IPython.utils.capture import capture_output
 from mako.runtime import capture
+from werkzeug.utils import send_file
 
 
 class Server:
@@ -66,14 +67,11 @@ class Server:
                 elif message.startswith("rmdir"):
                     response = self.command_rmdir(message)
                 elif message.startswith("get"):
-                    break
+                    response = self.command_get(message, client_socket)
                 elif message.startswith("put"):
-                    break
+                    response = self.command_put(message, client_socket)
                 else:
                     response = f"Comando não reconhecido: {message}"
-
-                print(f"RESPONSE: {message}")
-
 
                 # Envia uma resposta ao cliente
                 client_socket.sendall(response.encode())
@@ -171,3 +169,70 @@ class Server:
             return f"Diretório '{file_name}' removido com sucesso." if result.returncode == 0 else result.stderr
         except Exception as e:
             return f"Erro ao executar 'rmdir': {e}"
+
+    def command_get(self, message, client_socket):
+        """ Executando o comando 'get'"""
+        print(">> Executando get")
+
+        file_name = message[4:].strip()
+
+        return self.send_file(file_name, client_socket)
+
+    def command_put(self, message, client_socket):
+        """ Executando o comando 'put'"""
+        print(">> Executando put")
+
+        file_name = message[4:].strip()
+
+        return self.receive_file(file_name, client_socket)
+
+    def send_file(self, file_name, target_socket):
+        """ Function to send a file back """
+        try:
+            with open(file_name, "rb") as file:
+                print(f">> Enviando arquivo: {file_name}")
+                while True:
+                    data = file.read(1024) # lê 1024 bytes do arquivo
+                    if not data:
+                        break
+                    target_socket.sendall(data)
+                print(f"Arquivo '{file_name}' enviado com sucesso")
+                return ">> Arquivo buscado com sucesso da origem"
+        except FileNotFoundError:
+            return f"Erro: Arquivo '{file_name}' não encontrado"
+        except Exception as e:
+            return f"Erro ao executar 'get': {e}"
+
+
+    def receive_file(self, file_name, origin_socket):
+        """Função para receber um arquivo."""
+        try:
+            # Define o caminho da pasta 'received_files'
+            received_folder = "received_files"
+
+            # Cria a pasta 'received_files' se ela não existir
+            if not os.path.exists(received_folder):
+                os.makedirs(received_folder)
+                print(f"Pasta '{received_folder}' criada.")
+
+            # Define o caminho completo do arquivo
+            file_path = os.path.join(received_folder, file_name)
+            with open(file_path, "wb") as file:
+                print(f">> Recebendo arquivo: {file_name}")
+
+                while True:
+                    data = origin_socket.recv(1024)
+                    if not data:
+                        break
+                    file.write(data)
+
+                print(f"Arquivo '{file_name}' recebido com sucesso.")
+                return ">> Arquivo enviado com sucesso no destino."
+        except FileNotFoundError:
+            return f"Erro: Não foi possível criar o arquivo '{file_name}'"
+        except Exception as e:
+            return f"Erro ao receber arquivo: {e}"
+
+
+
+
