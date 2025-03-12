@@ -48,6 +48,8 @@ class Client:
                         self.send_file(file_name, self.socket)
                     elif command == "get":
                         self.receive_file(file_name, self.socket)
+                    final_response = self.socket.recv(1024).decode()
+                    print(f"Resposta final do servidor: {final_response}")
                 else:
                     print(f"Erro: {response}")
 

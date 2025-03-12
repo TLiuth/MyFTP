@@ -1,12 +1,26 @@
 from client import Client
 from server import Server
 import threading
+import utils
+from utils import verificaUser
+
+def DEBUGMODE():
+    return True
+
+def login_request():
+    while True and not DEBUGMODE():
+        user = input("Digite o nome de usuário: ")
+        senha = input("Digite a senha: ")
+        if verificaUser(user, senha):
+            break
 
 def main():
+
+    login_request()
+
+
     print("1 - INICIAR CLIENTE\n2 - INICIAR SERVIDOR\n")
     opcao = str(input("Digite a opção desejada: "))
-
-
 
     while opcao != "0":
         if opcao == "1":
