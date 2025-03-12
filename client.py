@@ -102,7 +102,7 @@ class Client:
                     target_socket.sendall(data)
                 target_socket.sendall(b"<<EOF>>")  # Envia um marcador para indicar fim da transmissão
                 print(f"Arquivo '{file_name}' enviado com sucesso")
-                return ">> Arquivo buscado com sucesso"
+                return # ">> Arquivo buscado com sucesso"
         except FileNotFoundError:
             return f"Erro: Arquivo '{file_name}' não encontrado"
         except Exception as e:

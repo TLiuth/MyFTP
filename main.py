@@ -3,7 +3,7 @@ from server import Server
 import threading
 
 def main():
-
+    print("1 - INICIAR CLIENTE\n2 - INICIAR SERVIDOR\n")
     opcao = str(input("Digite a opção desejada: "))
 
 
@@ -21,6 +21,7 @@ def main():
             except KeyboardInterrupt:
                 # Encerra o servidor ao pressionar Ctrl+C
                 server.stop()
+            break
         else:
             print("Opção inválida")
 
@@ -47,11 +48,8 @@ def main_client():
         # Envia uma mensagem
         client.send_message(mensagem)
 
-        print("z")
         # Recebe uma resposta
         client.receive_message()
-        
-        print("a")
 
         mensagem = str(input("Digite uma mensagem: "))
 
