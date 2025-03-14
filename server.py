@@ -23,13 +23,18 @@ class Server:
         try:
             # Cria um socket TCP/IP
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            # Configura a opção SO_REUSEADDR para reutilizar o socket
+            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
             # Associa o socket ao endereço e porta
             self.server_socket.bind((self.host, self.port))
+            self.running = True
             # Escuta por conexões (até 5 clientes na fila)
             self.server_socket.listen(5)
             print(f"Servidor escutando em {self.host}:{self.port}...")
 
-            while True:
+            while self.running:
                 # Aceita uma nova conexão
                 client_socket, client_address = self.server_socket.accept()
                 print(f"Conexão estabelecida com {client_address}")
@@ -45,7 +50,7 @@ class Server:
     def handle_client(self, client_socket):
         """Lida com a comunicação de um cliente."""
         try:
-            while True:
+            while self.running:
                 # Recebe a mensagem do cliente
                 data = client_socket.recv(1024)
                 if not data:
@@ -80,15 +85,20 @@ class Server:
         finally:
             # Fecha a conexão com o cliente
             client_socket.close()
-            self.client_sockets.remove(client_socket)
-            print("Conexão com o cliente encerrada.")
+            if client_socket in self.client_sockets:
+                self.client_sockets.remove(client_socket)
 
     def stop(self):
         """Encerra o servidor e fecha todas as conexões."""
         try:
+            # Sinaliza para parar o loop de aceitação de conexões
+            self.running = False
+
             # Fecha todos os sockets de clientes
             for client_socket in self.client_sockets:
                 client_socket.close()
+            self.client_sockets.clear()
+
             # Fecha o socket do servidor
             if self.server_socket:
                 self.server_socket.close()

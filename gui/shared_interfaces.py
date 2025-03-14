@@ -1,43 +1,71 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import utils
-from utils import verificaUser
+import server_interfaces
+
+class App(tk.Tk):
+    def __init__(self, title, size):
+
+        # main setup
+        super().__init__()
+        self.title(title)
+        self.geometry(f"{size[0]}x{size[1]}")
+        self.minsize(size[0], size[1])
+
+        self.loginMenu = LoginMenu(self)
+        self.loginMenu.pack(expand=True, fill="both")
+        # widgets
 
 
+        # run
+        self.mainloop()
+
+    def switch_to_service_menu(self):
+        # Remove the Menu frame
+        self.loginMenu.pack_forget()
+
+        # Create and pack the MainApp frame
+        self.service_menu = server_interfaces.ServiceMenu(self)
+        self.service_menu.pack(expand=True, fill="both")
 
 
-def on_click_login():
-    username = entry_username.get()
-    password = entry_password.get()
-
-    if utils.verificaUser(username, password, "../users/user_data.bin"):
-        messagebox.showinfo("Login", "Login bem sucedido")
-    else:
-        label_status.config(text="Usuário ou senha incorretos.", fg="red")
-
-root = tk.Tk() # Cria a janela principal
-root.title("Login") # Define o título da janela
-root.geometry("300x200") # Define o tamanho da janela
-
-label_username = tk.Label(root, text="Username: ")
-label_username.pack(pady=5)
-
-entry_username = tk.Entry(root)
-entry_username.pack(pady=5)
-
-label_password = tk.Label(root, text="Senha:")
-label_password.pack(pady=5)
-
-entry_password = tk.Entry(root, show="*")  # Mostra '*' no lugar dos caracteres da senha
-entry_password.pack(pady=5)
+class LoginMenu(ttk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.create_widgets()
 
 
-button_login = tk.Button(root, text="Login", command=on_click_login)
-button_login.pack(pady=10)
+    def create_widgets(self):
+
+        self.label_username = tk.Label(self, text="Username: ")
+        self.label_username.pack(pady=5)
+
+        self.entry_username = tk.Entry(self)
+        self.entry_username.pack(pady=5)
+
+        self.label_password = tk.Label(self, text="Senha:")
+        self.label_password.pack(pady=5)
+
+        self.entry_password = tk.Entry(self, show="*")  # Mostra '*' no lugar dos caracteres da senha
+        self.entry_password.pack(pady=5)
+
+        self.button_login = tk.Button(self, text="Login", command=self.on_click_login)
+        self.button_login.pack(pady=10)
+
+        self.label_status = tk.Label(self, text="", fg="red")
+        self.label_status.pack(pady=5)
 
 
-label_status = tk.Label(root, text="", fg="red")
-label_status.pack(pady=5)
+    def on_click_login(self):
+        username = self.entry_username.get()
+        password = self.entry_password.get()
+
+        if utils.verificaUser(username, password, "../users/user_data.bin"):
+            messagebox.showinfo("Login", "Login bem sucedido!")
+            self.parent.switch_to_service_menu()
+        else:
+            self.label_status.config(text="Usuário ou senha incorretos.", fg="red")
 
 
-root.mainloop()
+App("MyFTP", (600, 300))
