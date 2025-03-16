@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
+import sys
+sys.path.append('../')
 import utils
 import server_interfaces
 
@@ -12,8 +14,11 @@ class App(tk.Tk):
         self.geometry(f"{size[0]}x{size[1]}")
         self.minsize(size[0], size[1])
 
-        self.loginMenu = LoginMenu(self)
-        self.loginMenu.pack(expand=True, fill="both")
+        # self.loginMenu = LoginMenu(self)
+        # self.loginMenu.pack(expand=True, fill="both")
+        self.service_menu = server_interfaces.ServiceMenu(self)
+        self.service_menu.pack(expand=True, fill="both")
+
         # widgets
 
 
@@ -37,26 +42,31 @@ class LoginMenu(ttk.Frame):
 
 
     def create_widgets(self):
+        # Expande para preencher o espaço e permitir centralização
+        self.pack(expand=True, fill="both")
 
-        self.label_username = tk.Label(self, text="Username: ")
+        # Frame para os widgets do login (centraliza)
+        frame = tk.Frame(self)
+        frame.place(relx=0.5, rely=0.5, anchor="center")  # Posiciona no centro
+
+        self.label_username = tk.Label(frame, text="Username: ")
         self.label_username.pack(pady=5)
 
-        self.entry_username = tk.Entry(self)
+        self.entry_username = tk.Entry(frame)
         self.entry_username.pack(pady=5)
 
-        self.label_password = tk.Label(self, text="Senha:")
+        self.label_password = tk.Label(frame, text="Senha:")
         self.label_password.pack(pady=5)
 
-        self.entry_password = tk.Entry(self, show="*")  # Mostra '*' no lugar dos caracteres da senha
+        self.entry_password = tk.Entry(frame, show="*")
         self.entry_password.pack(pady=5)
 
-        self.button_login = tk.Button(self, text="Login", command=self.on_click_login)
+        self.button_login = tk.Button(frame, text="Login", command=self.on_click_login)
         self.button_login.pack(pady=10)
 
-        self.label_status = tk.Label(self, text="", fg="red")
+        self.label_status = tk.Label(frame, text="", fg="red")
         self.label_status.pack(pady=5)
-
-
+        
     def on_click_login(self):
         username = self.entry_username.get()
         password = self.entry_password.get()
@@ -68,4 +78,4 @@ class LoginMenu(ttk.Frame):
             self.label_status.config(text="Usuário ou senha incorretos.", fg="red")
 
 
-App("MyFTP", (600, 300))
+App("MyFTP", (700, 400))

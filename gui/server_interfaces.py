@@ -1,9 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+import sys
+sys.path.append('../')
 from server import Server
 from client import Client
 import threading
+import client_interfaces
 
 
 
@@ -14,14 +17,23 @@ class ServiceMenu(ttk.Frame):
 
 
     def create_widgets(self):
-        self.button_startClient = tk.Button(self, text="Start Client", command=self.on_click_client)
-        self.button_startClient.pack(pady=10)
+        # Expande para preencher o espaço e permitir centralização
+        self.pack(expand=True, fill="both")
 
-        self.button_startServer = tk.Button(self, text="Start Server", command=self.on_click_server)
+        # Frame para os widgets do server (centraliza)
+        self.frame = tk.Frame(self)
+        self.frame.place(relx=0.5, rely=0.5, anchor="center")  # Posiciona no centro
+        
+        self.button_startClient = tk.Button(self.frame, text="Start Client", command=self.on_click_client, width=10, height=2)
+        self.button_startClient.pack(pady=10)
+        self.button_startClient.config(state=tk.DISABLED)
+
+
+        self.button_startServer = tk.Button(self.frame, text="Start Server", command=self.on_click_server, width=10, height=2)
         self.button_startServer.pack(pady=10)
         self.button_startServer.config(background="orange")
 
-        self.entry_ip = tk.Entry(self, background="orange")  # Mostra '*' no lugar dos caracteres da senha
+        self.entry_ip = tk.Entry(self.frame, background="orange")  
         self.entry_ip.insert(0, '127.0.0.1')
         self.entry_ip.pack(pady=5)
 
@@ -34,14 +46,14 @@ class ServiceMenu(ttk.Frame):
             server_thread = threading.Thread(target=self.server.start, daemon=True)
             server_thread.start()
 
-            self.label_iniciado = tk.Label(self, text=f"Server running on {ip}!")
+            self.label_iniciado = tk.Label(self.frame, text=f"Server running on {ip}!")
             self.label_iniciado.pack(pady=10)
-            self.button_stopServer = tk.Button(self, text="Stop Server", background="red", command=self.on_click_stop_server)
+            self.button_stopServer = tk.Button(self.frame, text="Stop Server", background="red", command=self.on_click_stop_server)
             self.button_stopServer.pack(pady=10)
 
-            # bloqueia o botão de iniciar server ou de iniciar cliente
+            # bloqueia o botão de iniciar server e libera o de iniciar Cliente
             self.button_startServer.config(state=tk.DISABLED)
-            self.button_startClient.config(state=tk.DISABLED)
+            self.button_startClient.config(state=tk.ACTIVE)
         except Exception as e:
             # Handle any errors that occur while starting the server
             messagebox.showerror("Server Error", f"Failed to start server: {e}")
@@ -50,6 +62,9 @@ class ServiceMenu(ttk.Frame):
     def on_click_client(self):
         client = Client(host='127.0.0.1', port=12345)
         client.connect()
+        self.pack_forget()
+        self.client_menu = client_interfaces.ClientMenu(self.master, client)
+        self.client_menu.pack(expand=True, fill="both")
 
     def on_click_stop_server(self):
 
