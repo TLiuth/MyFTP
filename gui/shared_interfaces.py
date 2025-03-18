@@ -78,4 +78,4 @@ class LoginMenu(ttk.Frame):
             self.label_status.config(text="Usuário ou senha incorretos.", fg="red")
 
 
-App("MyFTP", (700, 400))
+App("MyFTP", (800, 500))
