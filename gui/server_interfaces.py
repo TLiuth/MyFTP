@@ -26,7 +26,7 @@ class ServiceMenu(ttk.Frame):
         
         self.button_startClient = tk.Button(self.frame, text="Start Client", command=self.on_click_client, width=10, height=2)
         self.button_startClient.pack(pady=10)
-        self.button_startClient.config(state=tk.DISABLED)
+        self.button_startClient.config(state=tk.ACTIVE)
 
 
         self.button_startServer = tk.Button(self.frame, text="Start Server", command=self.on_click_server, width=10, height=2)
@@ -51,9 +51,9 @@ class ServiceMenu(ttk.Frame):
             self.button_stopServer = tk.Button(self.frame, text="Stop Server", background="red", command=self.on_click_stop_server)
             self.button_stopServer.pack(pady=10)
 
-            # bloqueia o botão de iniciar server e libera o de iniciar Cliente
+            # bloqueia o botão de iniciar server e cliente
             self.button_startServer.config(state=tk.DISABLED)
-            self.button_startClient.config(state=tk.ACTIVE)
+            self.button_startClient.config(state=tk.DISABLED)
         except Exception as e:
             # Handle any errors that occur while starting the server
             messagebox.showerror("Server Error", f"Failed to start server: {e}")

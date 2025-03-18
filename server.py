@@ -140,21 +140,28 @@ class Server:
         except Exception as e:
             return f"Erro ao executar 'cd': {e}"
 
-    def command_cdback(self):
-        """ Executando o comando 'cd..'"""
-        print(">> Executando cd ..")
-        file_name = ".."
-        print(f"Tentando mudar para o diretório: {file_name}")
 
-        try:
-            # Usa os.chdir para mudar o diretório de trabalho do processo atual
-            os.chdir(file_name)
-            # Retorna o novo diretório de trabalho
-            return f"Diretório alterado para: {os.getcwd()}"
-        except FileNotFoundError:
-            return f"Erro: Diretório '{file_name}' não encontrado."
-        except Exception as e:
-            return f"Erro ao executar 'cdback': {e}"
+    # def command_cdback(self):
+    #     """ Executando o comando 'cd..'"""
+    #     print(">> Executando cd ..")
+
+    #     current_path = os.getcwd()
+    #     index = current_path.rfind("/")
+    #     new_path = current_path[:index]
+    #     print(f"NEW PATH: {new_path}")
+
+    #     file_name = ".."
+    #     #print(f"Tentando mudar para o diretório: {file_name}")
+
+    #     try:
+    #         # Usa os.chdir para mudar o diretório de trabalho do processo atual
+    #         os.chdir(file_name)
+    #         # Retorna o novo diretório de trabalho
+    #         return f"Diretório alterado para: {os.getcwd()}"
+    #     except FileNotFoundError:
+    #         return f"Erro: Diretório '{file_name}' não encontrado."
+    #     except Exception as e:
+    #         return f"Erro ao executar 'cdback': {e}"
 
     def command_mkdir(self, message):
         """ Executando o comando 'mkdir'"""

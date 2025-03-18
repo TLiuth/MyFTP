@@ -69,6 +69,7 @@ class Client:
                 data = self.socket.recv(1024)
                 if data:
                     print(f"--------------------\nMensagem recebida:\n{data.decode()}\n--------------------")
+                    return data.decode()
                 else:
                     print("Conexão fechada pelo servidor.")
             else:

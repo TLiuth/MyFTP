@@ -1,3 +1,4 @@
+import subprocess
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk  
@@ -11,15 +12,16 @@ class ClientMenu(tk.Frame):
 
     def load_images(self):
         """Carrega e redimensiona imagens para os botões"""
-        self.img_right = self.resize_image("../seta_direita.png", 50, 40)
-        self.img_left = self.resize_image("../seta_esquerda.png", 50, 40)
-        self.img_cd = self.resize_image("../cd_icon.png", 35, 35)
-        self.img_cd_up = self.resize_image("../cd_up_icon.png", 35, 35)
-        self.img_mkdir = self.resize_image("../mkdir_icon.png", 35, 35)
-        self.img_rmdir = self.resize_image("../rmdir_icon.png", 35, 35)
+        self.img_right = self.resize_image("../images/seta_direita.png", 50, 40)
+        self.img_left = self.resize_image("../images/seta_esquerda.png", 50, 40)
+        self.img_cd = self.resize_image("../images/cd_icon.png", 35, 35)
+        self.img_cd_up = self.resize_image("../images/cd_up_icon.png", 35, 35)
+        self.img_mkdir = self.resize_image("../images/mkdir_icon.png", 35, 35)
+        self.img_rmdir = self.resize_image("../images/rmdir_icon.png", 35, 35)
+        self.img_ls = self.resize_image("../images/ls_icon.png", 35, 35)
 
-        self.img_client = self.resize_image("../cliente_icon.png", 40, 40)
-        self.img_server = self.resize_image("../servidor_icon.png", 30, 30)
+        self.img_client = self.resize_image("../images/cliente_icon.png", 40, 40)
+        self.img_server = self.resize_image("../images/servidor_icon.png", 30, 30)
             
     def resize_image(self, path, width, height):
         """Redimensiona imagem e retorna um PhotoImage"""
@@ -42,11 +44,11 @@ class ClientMenu(tk.Frame):
         # Listboxes estilizadas
         self.listbox_client = tk.Listbox(self, height=15, width=30, bg="white", fg="#222", font=("Tahoma", 12))
         self.listbox_client.place(x=20, y=70, anchor="nw")
-        self.listbox_client.insert(0, "pasta_cliente.txt")
+        # self.listbox_client.insert(0, "pasta_cliente.txt")
 
         self.listbox_server = tk.Listbox(self, height=15, width=30, bg="white", fg="#222", font=("Tahoma", 12))
         self.listbox_server.place(x=780, y=70, anchor="ne")
-        self.listbox_server.insert(0, "pasta_server.txt")
+        # self.listbox_server.insert(0, "pasta_server.txt")
 
         self.entry_label = tk.Label(self, text= "Diretório:", font=("Tahoma",10, "bold"), fg="#333", bg="#f0f0f0")
         self.entry_label.place(x=225, y=460, anchor="nw")
@@ -57,25 +59,30 @@ class ClientMenu(tk.Frame):
 
         # Botões personalizados com efeito de hover
         button_style = {"bd": 2, "bg": "white", "fg": "white", "activebackground": "#45a049", "font": ("Tahoma", 12, "bold")}
+        
+        self.button_ls = tk.Button(self, image=self.img_ls, command=self.command_ls, **button_style )
+        self.button_ls.place(x=280, y=400)
+        ToolTip(self.button_ls, "Listar arquivos")
+        
         self.button_cd = tk.Button(self, image=self.img_cd, command=self.command_cd, **button_style)
-        self.button_cd.place(x=305, y=400)
+        self.button_cd.place(x=330, y=400)
         ToolTip(self.button_cd, "Mudar de diretório")
 
         self.button_cd_up = tk.Button(self, image=self.img_cd_up, command=self.command_cd_up, **button_style)
-        self.button_cd_up.place(x=355, y=400)
+        self.button_cd_up.place(x=380, y=400)
         ToolTip(self.button_cd_up, "Voltar um diretório")
 
         self.button_mkdir = tk.Button(self, image=self.img_mkdir, command=self.command_mkdir, **button_style)
-        self.button_mkdir.place(x=405, y=400)
+        self.button_mkdir.place(x=430, y=400)
         ToolTip(self.button_mkdir, "Criar diretório")
 
         self.button_rmdir = tk.Button(self, image=self.img_rmdir, command=self.command_rmdir, **button_style)
-        self.button_rmdir.place(x=455, y=400)
+        self.button_rmdir.place(x=480, y=400)
         ToolTip(self.button_rmdir, "Remover diretório")
 
         # Mensagem de status mais visível
-        self.label_status = tk.Label(self, text="", fg="red", font=("Consolas", 11, "bold"), bg="#f0f0f0")
-        self.label_status.place(x=510, y=415)
+        self.label_status = tk.Label(self, text="", fg="red", font=("Consolas", 10, "bold"), bg="#f0f0f0")
+        self.label_status.place(x=525, y=415)
 
         # Botões no centro para mover arquivos
         self.button_right = tk.Button(self, image=self.img_right, command=self.move_to_server, **button_style)
@@ -106,21 +113,40 @@ class ClientMenu(tk.Frame):
             self.client.send_message("get " + item)
             self.client.receive_message()
 
+    def command_ls(self):
+        self.label_status.config(text="Listando arquivos", fg="green")
+        self.client.send_message("ls")
+        files = self.client.receive_message().strip() 
+    
+        if files:  # Garante que há conteúdo
+            file_list = files.split("\n")  # Divide pelos quebras de linha
+            self.listbox_server.delete(0, tk.END)  # Limpa o Listbox
+            for file in file_list:  
+                if file.strip():  # Evita inserir linhas vazias
+                    self.listbox_server.insert(tk.END, file)  # Adiciona ao Listbox
+    
     def command_cd(self):
-        directory = self.entry_directory.get()
-        if directory:
+        # directory = self.entry_directory.get()
+        # if directory:
+        selected = self.listbox_server.curselection()
+        if selected:
+            directory = self.listbox_server.get(selected)
             self.label_status.config(text=f"Mudando para {directory}", fg="green")
             self.client.send_message("cd " + directory)
             self.client.receive_message()
-            self.entry_directory.delete(0, tk.END)
+            # self.entry_directory.delete(0, tk.END)
+            self.command_ls()
         else:
             self.label_status.config(text="Por favor, insira um diretório.", fg="red")
+        
 
     def command_cd_up(self):
         self.label_status.config(text="Voltando um diretório", fg="green")
-        self.client.send_message("cd..")
+        self.client.send_message("cd ..")
         self.client.receive_message()
         self.entry_directory.delete(0, tk.END)
+        self.command_ls()
+
 
     def command_mkdir(self):
         directory = self.entry_directory.get()
@@ -129,16 +155,21 @@ class ClientMenu(tk.Frame):
             self.client.send_message("mkdir " + directory)
             self.client.receive_message()
             self.entry_directory.delete(0, tk.END)
+            self.command_ls()
         else:
             self.label_status.config(text="Por favor, insira um diretório.", fg="red")
 
     def command_rmdir(self):
-        directory = self.entry_directory.get()
-        if directory:
+        # directory = self.entry_directory.get()
+        # if directory:
+        selected = self.listbox_server.curselection()
+        if selected:
+            directory = self.listbox_server.get(selected)
             self.label_status.config(text=f"Removendo o diretório {directory}", fg="green")
             self.client.send_message("rmdir " + directory)
             self.client.receive_message()
-            self.entry_directory.delete(0, tk.END)
+            # self.entry_directory.delete(0, tk.END)
+            self.command_ls()
         else:
             self.label_status.config(text="Por favor, insira um diretório.", fg="red")
 
