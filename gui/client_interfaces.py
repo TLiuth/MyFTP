@@ -1,11 +1,12 @@
-import subprocess
 import tkinter as tk
-from tkinter import ttk
-from PIL import Image, ImageTk  
+from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
+import utils
+
 
 class ClientMenu(tk.Frame):
     def __init__(self, parent, client):
-        super().__init__(parent, bg="#f0f0f0")  # Agora 'bg' funciona        
+        super().__init__(parent, bg="#f0f0f0")  # Agora 'bg' funciona
         self.client = client
         self.load_images()
         self.create_widgets()
@@ -22,7 +23,7 @@ class ClientMenu(tk.Frame):
 
         self.img_client = self.resize_image("../images/cliente_icon.png", 40, 40)
         self.img_server = self.resize_image("../images/servidor_icon.png", 30, 30)
-            
+
     def resize_image(self, path, width, height):
         """Redimensiona imagem e retorna um PhotoImage"""
         image = Image.open(path)
@@ -30,7 +31,6 @@ class ClientMenu(tk.Frame):
         return ImageTk.PhotoImage(image)
 
     def create_widgets(self):
-        
         self.label_client_icon = tk.Label(self, image=self.img_client, bg="#f0f0f0")
         self.label_client_icon.place(x=60, y=5)
         self.label_client = tk.Label(self, text="Cliente", font=("Tahoma", 20, "bold"), fg="#333", bg="#f0f0f0")
@@ -44,26 +44,25 @@ class ClientMenu(tk.Frame):
         # Listboxes estilizadas
         self.listbox_client = tk.Listbox(self, height=15, width=30, bg="white", fg="#222", font=("Tahoma", 12))
         self.listbox_client.place(x=20, y=70, anchor="nw")
-        # self.listbox_client.insert(0, "pasta_cliente.txt")
 
         self.listbox_server = tk.Listbox(self, height=15, width=30, bg="white", fg="#222", font=("Tahoma", 12))
         self.listbox_server.place(x=780, y=70, anchor="ne")
-        # self.listbox_server.insert(0, "pasta_server.txt")
 
-        self.entry_label = tk.Label(self, text= "Diretório:", font=("Tahoma",10, "bold"), fg="#333", bg="#f0f0f0")
+        self.entry_label = tk.Label(self, text="Diretório:", font=("Tahoma", 10, "bold"), fg="#333", bg="#f0f0f0")
         self.entry_label.place(x=225, y=460, anchor="nw")
-        
+
         # Campo de entrada para CD
         self.entry_directory = tk.Entry(self, width=20, font=("Tahoma", 12))
         self.entry_directory.place(x=300, y=460, anchor="nw")
 
         # Botões personalizados com efeito de hover
-        button_style = {"bd": 2, "bg": "white", "fg": "white", "activebackground": "#45a049", "font": ("Tahoma", 12, "bold")}
-        
-        self.button_ls = tk.Button(self, image=self.img_ls, command=self.command_ls, **button_style )
+        button_style = {"bd": 2, "bg": "white", "fg": "white", "activebackground": "#45a049",
+                        "font": ("Tahoma", 12, "bold")}
+
+        self.button_ls = tk.Button(self, image=self.img_ls, command=self.command_ls, **button_style)
         self.button_ls.place(x=280, y=400)
         ToolTip(self.button_ls, "Listar arquivos")
-        
+
         self.button_cd = tk.Button(self, image=self.img_cd, command=self.command_cd, **button_style)
         self.button_cd.place(x=330, y=400)
         ToolTip(self.button_cd, "Mudar de diretório")
@@ -116,29 +115,25 @@ class ClientMenu(tk.Frame):
     def command_ls(self):
         self.label_status.config(text="Listando arquivos", fg="green")
         self.client.send_message("ls")
-        files = self.client.receive_message().strip() 
-    
+        files = self.client.receive_message().strip()
+
         if files:  # Garante que há conteúdo
             file_list = files.split("\n")  # Divide pelos quebras de linha
             self.listbox_server.delete(0, tk.END)  # Limpa o Listbox
-            for file in file_list:  
+            for file in file_list:
                 if file.strip():  # Evita inserir linhas vazias
                     self.listbox_server.insert(tk.END, file)  # Adiciona ao Listbox
-    
+
     def command_cd(self):
-        # directory = self.entry_directory.get()
-        # if directory:
         selected = self.listbox_server.curselection()
         if selected:
             directory = self.listbox_server.get(selected)
             self.label_status.config(text=f"Mudando para {directory}", fg="green")
             self.client.send_message("cd " + directory)
             self.client.receive_message()
-            # self.entry_directory.delete(0, tk.END)
             self.command_ls()
         else:
             self.label_status.config(text="Por favor, insira um diretório.", fg="red")
-        
 
     def command_cd_up(self):
         self.label_status.config(text="Voltando um diretório", fg="green")
@@ -146,7 +141,6 @@ class ClientMenu(tk.Frame):
         self.client.receive_message()
         self.entry_directory.delete(0, tk.END)
         self.command_ls()
-
 
     def command_mkdir(self):
         directory = self.entry_directory.get()
@@ -160,21 +154,60 @@ class ClientMenu(tk.Frame):
             self.label_status.config(text="Por favor, insira um diretório.", fg="red")
 
     def command_rmdir(self):
-        # directory = self.entry_directory.get()
-        # if directory:
         selected = self.listbox_server.curselection()
         if selected:
             directory = self.listbox_server.get(selected)
             self.label_status.config(text=f"Removendo o diretório {directory}", fg="green")
             self.client.send_message("rmdir " + directory)
             self.client.receive_message()
-            # self.entry_directory.delete(0, tk.END)
             self.command_ls()
         else:
             self.label_status.config(text="Por favor, insira um diretório.", fg="red")
 
 
+class LoginMenu(ttk.Frame):
+    def __init__(self, parent, on_login_success):
+        super().__init__(parent)
+        self.parent = parent
+        self.on_login_success = on_login_success  # Callback function for successful login
+        self.create_widgets()
 
+    def create_widgets(self):
+        # Expande para preencher o espaço e permitir centralização
+        self.pack(expand=True, fill="both")
+
+        # Frame para os widgets do login (centraliza)
+        frame = tk.Frame(self)
+        frame.place(relx=0.5, rely=0.5, anchor="center")  # Posiciona no centro
+
+        self.label_username = tk.Label(frame, text="Username: ")
+        self.label_username.pack(pady=5)
+
+        self.entry_username = tk.Entry(frame)
+        self.entry_username.pack(pady=5)
+
+        self.label_password = tk.Label(frame, text="Senha:")
+        self.label_password.pack(pady=5)
+
+        self.entry_password = tk.Entry(frame, show="*")
+        self.entry_password.pack(pady=5)
+
+        self.button_login = tk.Button(frame, text="Login", command=self.on_click_login)
+        self.button_login.pack(pady=10)
+
+        self.label_status = tk.Label(frame, text="", fg="red")
+        self.label_status.pack(pady=5)
+
+    def on_click_login(self):
+        username = self.entry_username.get()
+        password = self.entry_password.get()
+
+        if utils.verificaUser(username, password, "../users/user_data.bin"):
+            messagebox.showinfo("Login", "Login bem sucedido!")
+            self.on_login_success()  # Call the callback function on successful login
+            self.pack_forget()  # Hide the LoginMenu
+        else:
+            self.label_status.config(text="Usuário ou senha incorretos.", fg="red")
 
 
 class ToolTip:
@@ -200,7 +233,7 @@ class ToolTip:
         self.tip_window.wm_overrideredirect(True)  # Remove bordas
         self.tip_window.wm_geometry(f"+{x}+{y}")
 
-        label = tk.Label(self.tip_window, text=self.text, bg="lightyellow", 
+        label = tk.Label(self.tip_window, text=self.text, bg="lightyellow",
                          relief="solid", borderwidth=1, font=("Tahoma", 10))
         label.pack()
 

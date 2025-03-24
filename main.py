@@ -1,8 +1,7 @@
 from client import Client
 from server import Server
-import threading
-import utils
 from utils import verificaUser
+from gui import shared_interfaces as si
 
 def DEBUGMODE():
     return True
@@ -11,7 +10,7 @@ def login_request():
     while True and not DEBUGMODE():
         user = input("Digite o nome de usuário: ")
         senha = input("Digite a senha: ")
-        if verificaUser(user, senha):
+        if verificaUser(user, senha, "../users/user_data.bin"):
             break
 
 def main():
@@ -75,4 +74,5 @@ def main_server():
     pass
 
 if __name__ == "__main__":
-    main()
+    si.App("MyFTP", (800, 500))
+    # main()

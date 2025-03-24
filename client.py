@@ -1,6 +1,4 @@
-import socket
-import sys
-import os
+import json
 
 import socket
 
@@ -92,6 +90,13 @@ class Client:
     def greet(self):
         """Mensagem de saudação."""
         print("Conectado ao servidor")
+
+    def send_login(self, username, password, path):
+        """Sends a login request to the server."""
+        login_data = {"command": "login", "username": username, "password": password, "path": path}
+        self.socket.sendall(json.dumps(login_data).encode())
+        response = self.socket.recv(1024).decode()
+        return response
 
     def send_file(self, file_name, target_socket):
         """Envia um arquivo para o cliente."""

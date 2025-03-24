@@ -1,14 +1,10 @@
-import socket
-import sys
 import os
+import json
 
 import socket
 import threading
 import subprocess
 
-# from IPython.utils.capture import capture_output
-# from mako.runtime import capture
-from werkzeug.utils import send_file
 
 
 class Server:
@@ -61,6 +57,23 @@ class Server:
                 message = data.decode().strip()
                 print(f"Mensagem recebida: {complete_message}")
                 print(f"Test message: {message}")
+
+                # Handles login
+                if message.startswith("login"):
+                    # Extract username and password
+                    parts = message.split()
+                    if len(parts) == 3:
+                        username = parts[1]
+                        password = parts[2]
+                        if self.verificaUser(username, password, "../users/user_data.bin"):
+                            response = "Login successful"
+                        else:
+                            response = "Invalid username or password"
+                    else:
+                        response = "Invalid login request"
+                else:
+                    response = f"Comando não reconhecido: {message}"
+
                 if message.startswith("ls"):
                     response = self.command_ls()
                 elif message.startswith("cd"):
@@ -139,6 +152,28 @@ class Server:
             return f"Erro: Diretório '{file_name}' não encontrado."
         except Exception as e:
             return f"Erro ao executar 'cd': {e}"
+
+
+    def verificaUser(self, user, senha, path):
+        try:
+            with open(path, "rb") as file:
+                json_data = file.read().decode("utf-8")  # converte os bytes de volta para string
+
+            user_data = json.loads(json_data)
+            if user in user_data and user_data[user] == senha:
+                return True
+            else:
+                print("Nome ou senha inválidos")
+                return False
+        except json.JSONDecodeError:
+            print("Erro ao decodificar o arquivo JSON.")
+            return False
+        except KeyError:
+            print("Nome ou senha inválidos")
+            return False
+        except Exception as e:
+            print(f"Ocorreu um erro inesperado: {e}")
+            return False
 
 
     # def command_cdback(self):
