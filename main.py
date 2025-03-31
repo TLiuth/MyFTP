@@ -4,25 +4,23 @@ from utils import verificaUser
 
 
 def DEBUGMODE():
-    return True
+    return False
 
 def login_request():
     while True and not DEBUGMODE():
         user = input("Digite o nome de usuário: ")
         senha = input("Digite a senha: ")
-        if verificaUser(user, senha, "../users/user_data.bin"):
+        if verificaUser(user, senha, "users/user_data.bin"):
             break
 
 def main():
-
-    login_request()
-
 
     print("1 - INICIAR CLIENTE\n2 - INICIAR SERVIDOR\n")
     opcao = str(input("Digite a opção desejada: "))
 
     while opcao != "0":
         if opcao == "1":
+            login_request()
             main_client()
 
             break
@@ -57,7 +55,7 @@ def main_client():
     
     print("Digite FIM para encerrar a conexão")
     mensagem = str(input("Digite uma mensagem: "))
-    while mensagem != "FIM":
+    while mensagem != "FIM" or mensagem != "fim":
 
         # encerra o loop e desconecta
         if mensagem == "FIM":
