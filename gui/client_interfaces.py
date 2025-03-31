@@ -1,3 +1,4 @@
+import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
@@ -44,6 +45,8 @@ class ClientMenu(tk.Frame):
         # Listboxes estilizadas
         self.listbox_client = tk.Listbox(self, height=15, width=30, bg="white", fg="#222", font=("Tahoma", 12))
         self.listbox_client.place(x=20, y=70, anchor="nw")
+        self.command_ls_client()
+        
 
         self.listbox_server = tk.Listbox(self, height=15, width=30, bg="white", fg="#222", font=("Tahoma", 12))
         self.listbox_server.place(x=780, y=70, anchor="ne")
@@ -100,7 +103,6 @@ class ClientMenu(tk.Frame):
             self.listbox_client.delete(selected)
             self.listbox_server.insert("end", item)
             self.client.send_message("put " + item)
-            self.client.receive_message()
 
     def move_to_client(self):
         """Simula mover arquivo do Server para o Client"""
@@ -110,7 +112,6 @@ class ClientMenu(tk.Frame):
             self.listbox_server.delete(selected)
             self.listbox_client.insert("end", item)
             self.client.send_message("get " + item)
-            self.client.receive_message()
 
     def command_ls(self):
         self.label_status.config(text="Listando arquivos", fg="green")
@@ -123,7 +124,27 @@ class ClientMenu(tk.Frame):
             for file in file_list:
                 if file.strip():  # Evita inserir linhas vazias
                     self.listbox_server.insert(tk.END, file)  # Adiciona ao Listbox
+                    
+    def command_ls_client(self):
+        try:
+            result = subprocess.run(['ls'], capture_output=True, text=True)
+            if result.returncode == 0:
+                if not result.stdout:
+                    return None
+                files = result.stdout.strip()
+                file_list = files.split("\n")
+                self.listbox_client.delete(0, tk.END)
+                for file in file_list:
+                    if file.strip():  # Evita inserir linhas vazias
+                        self.listbox_client.insert(tk.END, file)  # Adiciona ao Listbox
+            else:
+                return result.stderr
+        except Exception as e:
+            return f"Erro ao executar 'ls': {e}"
 
+
+    
+    
     def command_cd(self):
         selected = self.listbox_server.curselection()
         if selected:

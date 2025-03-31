@@ -39,7 +39,7 @@ class Client:
                 file_name = command_parts[1].strip()
                 self.socket.sendall(message.encode())  # Envia o comando
                 response = self.socket.recv(1024).decode()  # Aguarda resposta do servidor
-                print(response)
+                # print(response)
 
                 if response == "READY":
                     if command == "put":
@@ -119,7 +119,7 @@ class Client:
     def receive_file(self, file_name, origin_socket):
         """Função para receber um arquivo."""
         try:
-            with open(file_name, "wb") as file:
+            with open(f'TEMP_{file_name}', "wb") as file:
                 print(f"Recebendo arquivo: {file_name}")
 
                 while True:
@@ -138,6 +138,7 @@ class Client:
                     file.write(data)
 
                 print(f"Arquivo '{file_name}' recebido com sucesso.")
+                file.close()
                 return ">> Arquivo recebido com sucesso."
         except Exception as e:
             return f"Erro ao receber arquivo: {e}"

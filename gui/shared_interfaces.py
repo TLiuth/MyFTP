@@ -2,7 +2,7 @@ import tkinter as tk
 import sys
 sys.path.append('../')
 
-from . import server_interfaces
+import server_interfaces
 
 class App(tk.Tk):
     def __init__(self, title, size):
@@ -19,4 +19,4 @@ class App(tk.Tk):
         # Run the application
         self.mainloop()
 
-#App("MyFTP", (800, 500))
+App("MyFTP", (800, 500))

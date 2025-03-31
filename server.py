@@ -90,9 +90,10 @@ class Server:
                     response = self.command_put(message, client_socket)
                 else:
                     response = f"Comando não reconhecido: {message}"
-
-                # Envia uma resposta ao cliente
-                client_socket.sendall(response.encode())
+                    
+                if not (message.startswith("get") or message.startswith("put")):
+                    # Envia uma resposta ao cliente
+                    client_socket.sendall(response.encode())
         except Exception as e:
             print(f"Erro ao lidar com o cliente: {e}")
         finally:
@@ -176,27 +177,6 @@ class Server:
             return False
 
 
-    # def command_cdback(self):
-    #     """ Executando o comando 'cd..'"""
-    #     print(">> Executando cd ..")
-
-    #     current_path = os.getcwd()
-    #     index = current_path.rfind("/")
-    #     new_path = current_path[:index]
-    #     print(f"NEW PATH: {new_path}")
-
-    #     file_name = ".."
-    #     #print(f"Tentando mudar para o diretório: {file_name}")
-
-    #     try:
-    #         # Usa os.chdir para mudar o diretório de trabalho do processo atual
-    #         os.chdir(file_name)
-    #         # Retorna o novo diretório de trabalho
-    #         return f"Diretório alterado para: {os.getcwd()}"
-    #     except FileNotFoundError:
-    #         return f"Erro: Diretório '{file_name}' não encontrado."
-    #     except Exception as e:
-    #         return f"Erro ao executar 'cdback': {e}"
 
     def command_mkdir(self, message):
         """ Executando o comando 'mkdir'"""
@@ -247,14 +227,19 @@ class Server:
         try:
             with open(file_name, "rb") as file:
                 print(f">> Enviando arquivo: {file_name}")
-                while True:
+                file_size = os.path.getsize(file_name)
+                print(f"Tamanho do arquivo: {file_size} bytes")
+                tamanho = 0
+                while tamanho < file_size:
                     data = file.read(1024)
-                    if not data:
-                        break
+
+                    print(f"Conteúdo: {data}")
                     target_socket.sendall(data)
+                    tamanho += len(data)
                 target_socket.sendall(b"<<EOF>>")  # Envia um marcador para indicar fim da transmissão
                 print(f"Arquivo '{file_name}' enviado com sucesso")
-                return ">> Arquivo buscado com sucesso"
+                file.close()
+                return None
         except FileNotFoundError:
             return f"Erro: Arquivo '{file_name}' não encontrado"
         except Exception as e:

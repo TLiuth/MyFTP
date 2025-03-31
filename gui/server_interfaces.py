@@ -7,7 +7,7 @@ sys.path.append('../')
 from server import Server
 from client import Client
 import threading
-from . import client_interfaces
+import client_interfaces
 
 
 class ServiceMenu(ttk.Frame):

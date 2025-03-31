@@ -1,7 +1,7 @@
 from client import Client
 from server import Server
 from utils import verificaUser
-from gui import shared_interfaces as si
+
 
 def DEBUGMODE():
     return True
@@ -27,7 +27,10 @@ def main():
 
             break
         elif opcao == "2":
-            server = Server(host='127.0.0.1', port=12345)
+            ip = str(input("Digite um IP, ou 0 pro IP local: "))
+            if ip == '0':
+                ip = '127.0.0.1'
+            server = Server(host=f'{ip}', port=12345)
             try:
                 # Inicia o servidor
                 server.start()
@@ -42,7 +45,10 @@ def main():
 
 # trata do fluxo principal do cliente
 def main_client():
-    client = Client(host='127.0.0.1', port=12345)
+    ip = str(input("Digite um IP, ou 0 pro IP local: "))
+    if ip == '0':
+        ip = '127.0.0.1'
+    client = Client(host=f'{ip}', port=12345)
     client.connect()
     
     # server_listener = threading.Thread(target=client.handle_server, daemon=True)
@@ -61,8 +67,9 @@ def main_client():
         # Envia uma mensagem
         client.send_message(mensagem)
 
-        # Recebe uma resposta
-        client.receive_message()
+        if not (mensagem.startswith("get") or mensagem.startswith("put")):
+            # Recebe uma resposta
+            client.receive_message()
 
         mensagem = str(input("Digite uma mensagem: "))
 
@@ -74,5 +81,4 @@ def main_server():
     pass
 
 if __name__ == "__main__":
-    si.App("MyFTP", (800, 500))
-    # main()
+    main()
