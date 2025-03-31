@@ -100,7 +100,6 @@ class ClientMenu(tk.Frame):
         selected = self.listbox_client.curselection()
         if selected:
             item = self.listbox_client.get(selected)
-            self.listbox_client.delete(selected)
             self.listbox_server.insert("end", item)
             self.client.send_message("put " + item)
 
@@ -109,7 +108,6 @@ class ClientMenu(tk.Frame):
         selected = self.listbox_server.curselection()
         if selected:
             item = self.listbox_server.get(selected)
-            self.listbox_server.delete(selected)
             self.listbox_client.insert("end", item)
             self.client.send_message("get " + item)
 
@@ -124,6 +122,7 @@ class ClientMenu(tk.Frame):
             for file in file_list:
                 if file.strip():  # Evita inserir linhas vazias
                     self.listbox_server.insert(tk.END, file)  # Adiciona ao Listbox
+        self.command_ls_client()
                     
     def command_ls_client(self):
         try:
